@@ -1,7 +1,7 @@
 import React,{useEffect,useRef,useState} from 'react';
 import { STORAGE_KEYS, DEFAULT_SETTINGS, readStorage, writeStorage, removeStorage, createId, validateMessage, normalizeSettings, normalizeHistory, makeExportPayload } from './core.js';
 import{createRoot}from'react-dom/client';
-import{Bot,Menu,Plus,Send,Settings,Trash2,Copy,Sparkles,ShieldCheck,Download,X,MessageSquare,Square}from'lucide-react';
+import{Bot,Menu,Plus,Send,Settings,Trash2,Copy,Sparkles,ShieldCheck,Download,X,MessageSquare,Square,Paperclip}from'lucide-react';
 import'./style.css';
 const HISTORY=STORAGE_KEYS.history,CONFIG=STORAGE_KEYS.settings;
 const defaults=DEFAULT_SETTINGS;
@@ -56,12 +56,39 @@ function App(){
    setIsSending(false);
   }
  }
+ async function attachFile(event){
+  const file=event.target.files?.[0];
+  event.target.value='';
+  if(!file)return;
+  if(!/\.(txt|md|csv|json|log)$/i.test(file.name)){
+   setError(t('केवल TXT, MD, CSV, JSON या LOG text files समर्थित हैं।','Only TXT, MD, CSV, JSON, or LOG text files are supported.'));
+   return;
+  }
+  if(file.size>256*1024){
+   setError(t('File 256 KB से छोटी होनी चाहिए।','File must be smaller than 256 KB.'));
+   return;
+  }
+  try{
+   const content=await file.text();
+   const prefix='[Attached text file: '+file.name+']\n';
+   const remaining=Math.max(0,8000-draft.length-prefix.length-80);
+   if(remaining<1){
+    setError(t('पहले message छोटा करें, फिर file जोड़ें।','Shorten the message before attaching a file.'));
+    return;
+   }
+   const clipped=content.length>remaining;
+   setDraft((draft?draft+'\n\n':'')+prefix+content.slice(0,remaining)+(clipped?'\n[File content truncated to fit the message limit.]':''));
+   setError('');
+  }catch{
+   setError(t('File पढ़ी नहीं जा सकी।','Could not read this file.'));
+  }
+ }
  function exportData(){try{const u=URL.createObjectURL(new Blob([JSON.stringify(makeExportPayload({settings,chats}),null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=u;a.download='dragon-ai-data.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),2000)}catch{setError(t('Export असफल।','Export failed.'))}}
  function wipe(){if(!confirm(t('सभी बातचीत हटाएँ? यह वापस नहीं आएगा।','Delete all conversations? This cannot be undone.')))return;setChats([]);setActive('');removeStorage(HISTORY)}
  return <div className="app"><aside className={'sidebar '+(panel==='history'?'show':'')}><div className="brand"><div className="logo"><Bot size={24}/></div><div><b>DRAGON AI</b><small>Free-first assistant</small></div><button className="icon mobile" onClick={()=>setPanel('')} aria-label="Close"><X/></button></div><button className="new" onClick={fresh}><Plus size={18}/>{t('नई बातचीत','New chat')}</button><div className="side-label">{t('हाल की बातचीत','Recent chats')}</div><div className="history">{chats.map(c=><button key={c.id} className={'history-item '+(c.id===active?'selected':'')} onClick={()=>{setActive(c.id);setPanel('')}}><MessageSquare size={15}/><span>{c.title}</span></button>)}</div><div className="side-bottom"><button onClick={()=>setPanel('settings')}><Settings size={17}/>{t('सेटिंग्स','Settings')}</button><span className="status"><i className={online?'dot':'dot off'}/>{online?'Online':'Offline'}</span></div></aside>
  <main><header><button className="icon mobile" onClick={()=>setPanel('history')} aria-label="Menu"><Menu/></button><div className="head-title"><strong>{current?.title||'DRAGON AI'}</strong><small>{settings.provider==='demo'?t('स्थानीय Demo · असली AI नहीं','Local demo · not real AI'):settings.provider}</small></div><button className="icon" onClick={()=>setPanel('settings')} aria-label="Settings"><Settings/></button></header>
  <section className="messages">{!current?.messages?.length?<div className="welcome"><div className="glow"><Sparkles size={28}/></div><h1>{t('नमस्ते! मैं DRAGON AI हूँ।','Hello! I’m DRAGON AI.')}</h1><p>{t('आप क्या जानना या बनाना चाहते हैं?','What would you like to learn or create?')}</p><div className="suggestions">{[t('Python सीखने में मदद करो','Help me learn Python'),t('एक काम की योजना बनाओ','Create a useful plan'),t('यह code समझाओ','Explain this code')].map(s=><button key={s} onClick={()=>setDraft(s)}>{s}</button>)}</div><div className="demo-note"><ShieldCheck size={16}/>{t('अभी Demo UI है — AI उत्तर simulated हैं।','Demo UI — AI responses are simulated.')}</div></div>:current.messages.map(m=><article className={'message '+m.role} key={m.id}><div className="avatar">{m.role==='assistant'?<Bot size={18}/>:<span>U</span>}</div><div className="bubble"><div className="role">{m.role==='assistant'?'DRAGON AI':t('आप','You')}</div><p>{m.content}</p>{m.demo&&<small className="demo-tag">DEMO</small>}<button className="copy" onClick={()=>navigator.clipboard?.writeText(m.content).catch(()=>setError(t('कॉपी नहीं हो सका।','Copy failed.')))}><Copy size={14}/>{t('कॉपी','Copy')}</button></div></article>)}</section>
- {error&&<div className="error" role="alert">{error}<button onClick={()=>setError('')}>×</button></div>}<form className="composer" onSubmit={e=>{e.preventDefault();send()}}><textarea value={draft} disabled={isSending} onChange={e=>setDraft(e.target.value)} placeholder={t('DRAGON से कुछ पूछें…','Message DRAGON…')} rows="1" maxLength="8000" onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}}}/><button className="send" disabled={!isSending&&!draft.trim()} aria-label={isSending?"Stop response":"Send"} onClick={isSending?()=>abortRef.current?.abort():undefined} type={isSending?"button":"submit"}>{isSending?<Square size={16}/>:<Send size={18}/>}</button><small>{t('Enter भेजें · Shift+Enter नई लाइन','Enter to send · Shift+Enter for newline')}</small></form></main>
+ {error&&<div className="error" role="alert">{error}<button onClick={()=>setError('')}>×</button></div>}<form className="composer" onSubmit={e=>{e.preventDefault();send()}}><input className="file-input" type="file" accept=".txt,.md,.csv,.json,.log,text/plain,text/markdown,text/csv,application/json" onChange={attachFile} aria-label="Attach text file"/><button className="attach" type="button" disabled={isSending} onClick={e=>e.currentTarget.previousElementSibling.click()} aria-label="Attach text file"><Paperclip size={16}/></button><textarea value={draft} disabled={isSending} onChange={e=>setDraft(e.target.value)} placeholder={t('DRAGON से कुछ पूछें…','Message DRAGON…')} rows="1" maxLength="8000" onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}}}/><button className="send" disabled={!isSending&&!draft.trim()} aria-label={isSending?"Stop response":"Send"} onClick={isSending?()=>abortRef.current?.abort():undefined} type={isSending?"button":"submit"}>{isSending?<Square size={16}/>:<Send size={18}/>}</button><small>{t('Enter भेजें · Shift+Enter नई लाइन','Enter to send · Shift+Enter for newline')}</small></form></main>
  {panel==='settings'&&<div className="overlay" onClick={()=>setPanel('')}><section className="settings" onClick={e=>e.stopPropagation()}><div className="settings-head"><h2><Settings/> {t('सेटिंग्स','Settings')}</h2><button className="icon" onClick={()=>setPanel('')}><X/></button></div><label>{t('भाषा','Language')}<select value={settings.lang} onChange={e=>setSettings(s=>({...s,lang:e.target.value}))}><option value="hi">हिंदी</option><option value="en">English</option></select></label><label>{t('AI Provider','AI Provider')}<select value={settings.provider} onChange={e=>setSettings(s=>({...s,provider:e.target.value}))}><option value="demo">Demo (no real AI)</option><option value="groq">Groq (server key required)</option><option value="gemini">Gemini (server key required)</option><option value="openrouter">OpenRouter (server key required)</option></select></label><p className="notice"><ShieldCheck size={17}/>{t('ब्राउज़र में API key कभी न डालें। चुने हुए provider की server-side key configure होने पर ही असली उत्तर मिलेंगे।','Never put API keys in the browser. Real replies require a server-side key for the selected provider.')}</p><label className="check"><input type="checkbox" checked={settings.save} onChange={e=>setSettings(s=>({...s,save:e.target.checked}))}/>{t('इस डिवाइस पर history सेव करें','Save history on this device')}</label><button className="action" onClick={exportData}><Download size={17}/>{t('डेटा Export करें','Export data')}</button><button className="action danger" onClick={wipe}><Trash2 size={17}/>{t('सभी बातचीत हटाएँ','Delete all chats')}</button><p className="fine">{t('AI API उपलब्ध है; provider key, accounts, cloud history और Android APK अभी बाकी हैं।','AI API is available; provider key, accounts, cloud history, and Android APK are still pending.')}</p></section></div>}</div>
 }
 createRoot(document.getElementById('root')).render(<App/>);
