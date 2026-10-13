@@ -7,7 +7,7 @@ Mobile-first, Hindi/English AI assistant built with React, Vite, and Vercel serv
 - Responsive chat UI, local conversation history and settings
 - Hindi/English interface preference, JSON export, delete confirmation and network status
 - Defensive client-side storage/input utilities with Node unit tests
-- `POST /api/chat` server-side endpoint for Groq, Gemini and OpenRouter
+- `POST /api/chat` server-side endpoint for Groq, Gemini and OpenRouter, with a multilingual response instruction
 - API keys are read only from server environment variables; never put keys in frontend code or `VITE_*` variables
 - Demo mode is clearly labelled and remains available without a provider key
 
@@ -45,7 +45,7 @@ The APK bundles the web UI and calls the deployed server API at `https://dragon-
 Production app: https://dragon-ai-five.vercel.app  
 Repository: https://github.com/crxraj786/DRAGON-AI-
 
-Vercel automatically deploys commits pushed to `main`. GitHub Pages workflow requires Pages to be enabled in repository settings; Vercel is the current deployment target.
+Vercel automatically deploys commits pushed to `main`. GitHub Actions separately runs the unit tests and production web build.
 
 ## Security and current limitations
 
