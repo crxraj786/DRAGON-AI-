@@ -16,14 +16,45 @@ function App(){
  useEffect(()=>{const configWrite=writeStorage(CONFIG,normalizeSettings(settings));const historyWrite=settings.save?writeStorage(HISTORY,normalizeHistory(chats)):(removeStorage(HISTORY),{ok:true});if(!configWrite.ok||!historyWrite.ok)setError(t('डिवाइस स्टोरेज में समस्या है। Export करके जगह खाली करें।','Device storage failed. Export data and free some space.'))},[settings,chats]);
  const current=chats.find(c=>c.id===active);const id=createId;
  function fresh(){const c={id:id(),title:t('नई बातचीत','New chat'),messages:[],updated:Date.now()};setChats(p=>[c,...p]);setActive(c.id);setPanel('')}
- async function send(){if(isSending)return;const validation=validateMessage(draft);if(!validation.ok){if(validation.reason==='too-long')setError(t('संदेश 8000 अक्षरों से छोटा रखें।','Keep messages under 8000 characters.'));return}const q=validation.content;
- let list=[...chats],cid=active;if(!list.some(c=>c.id===cid)){cid=id();list.unshift({id:cid,title:q.slice(0,42),messages:[],updated:Date.now()})}
- const c=list.find(x=>x.id===cid);if(!c.messages.length)c.title=q.slice(0,42);const userMessage={id:id(),role:'user',content:q};c.messages=[...c.messages,userMessage];c.updated=Date.now();setChats(list);setActive(cid);setDraft('');setError('');
- if(settings.provider==='demo'){const reply=t('**Demo मोड:** यह वास्तविक AI उत्तर नहीं है।','**Demo mode:** This is not a real AI response.');setChats(p=>p.map(chat=>chat.id===cid?{...chat,messages:[...chat.messages,{id:id(),role:'assistant',content:reply+'\\n\\nYour message: '+q.slice(0,350),demo:true}],updated:Date.now()}:chat));return}
- setIsSending(true);
- try{const conversation=c.messages.filter(m=>['user','assistant'].includes(m.role)).slice(-24).map(m=>({role:m.role,content:m.content}));const response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({provider:settings.provider,messages:conversation})});const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.error||'AI request failed.');if(typeof data.content!=='string'||!data.content.trim())throw new Error('AI provider returned an empty response.');setChats(p=>p.map(chat=>chat.id===cid?{...chat,messages:[...chat.messages,{id:id(),role:'assistant',content:data.content}],updated:Date.now()}:chat))}
- catch(err){setError(err.message||t('AI सेवा उपलब्ध नहीं है।','AI service is unavailable.'));setDraft(q)}
- finally{setIsSending(false)}
+ async function send(){
+  if(isSending)return;
+  const validation=validateMessage(draft);
+  if(!validation.ok){
+   if(validation.reason==='too-long')setError(t('संदेश 8000 अक्षरों से छोटा रखें।','Keep messages under 8000 characters.'));
+   return;
+  }
+  const q=validation.content;
+  const existing=chats.find(chat=>chat.id===active);
+  const cid=existing?.id||id();
+  const base=existing||{id:cid,title:q.slice(0,42),messages:[],updated:Date.now()};
+  const userMessage={id:id(),role:'user',content:q};
+  const updatedChat={...base,title:base.messages.length?base.title:q.slice(0,42),messages:[...base.messages,userMessage],updated:Date.now()};
+  setChats(previous=>existing?previous.map(chat=>chat.id===cid?updatedChat:chat):[updatedChat,...previous]);
+  setActive(cid);
+  setDraft('');
+  setError('');
+  if(settings.provider==='demo'){
+   const reply=t('**Demo मोड:** यह वास्तविक AI उत्तर नहीं है।','**Demo mode:** This is not a real AI response.');
+   setChats(previous=>previous.map(chat=>chat.id===cid?{...chat,messages:[...chat.messages,{id:id(),role:'assistant',content:reply+'\n\nYour message: '+q.slice(0,350),demo:true}],updated:Date.now()}:chat));
+   return;
+  }
+  setIsSending(true);
+  const controller=new AbortController();
+  abortRef.current=controller;
+  try{
+   const conversation=updatedChat.messages.filter(message=>['user','assistant'].includes(message.role)).slice(-24).map(message=>({role:message.role,content:message.content}));
+   const response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({provider:settings.provider,messages:conversation}),signal:controller.signal});
+   const data=await response.json().catch(()=>({}));
+   if(!response.ok)throw new Error(data.error||'AI request failed.');
+   if(typeof data.content!=='string'||!data.content.trim())throw new Error('AI provider returned an empty response.');
+   setChats(previous=>previous.map(chat=>chat.id===cid?{...chat,messages:[...chat.messages,{id:id(),role:'assistant',content:data.content}],updated:Date.now()}:chat));
+  }catch(err){
+   if(err?.name==='AbortError')setError(t('उत्तर रोक दिया गया।','Response stopped.'));
+   else{setError(err.message||t('AI सेवा उपलब्ध नहीं है।','AI service is unavailable.'));setDraft(q);}
+  }finally{
+   if(abortRef.current===controller)abortRef.current=null;
+   setIsSending(false);
+  }
  }
  function exportData(){try{const u=URL.createObjectURL(new Blob([JSON.stringify(makeExportPayload({settings,chats}),null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=u;a.download='dragon-ai-data.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),2000)}catch{setError(t('Export असफल।','Export failed.'))}}
  function wipe(){if(!confirm(t('सभी बातचीत हटाएँ? यह वापस नहीं आएगा।','Delete all conversations? This cannot be undone.')))return;setChats([]);setActive('');removeStorage(HISTORY)}
