@@ -1,0 +1,11 @@
+{
+  "appId": "com.dragonai.assistant",
+  "appName": "DRAGON AI",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": false
+  }
+}
