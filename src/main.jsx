@@ -34,8 +34,8 @@ function App(){
   setDraft('');
   setError('');
   if(settings.provider==='demo'){
-   const reply=t('**Demo मोड:** यह वास्तविक AI उत्तर नहीं है।','**Demo mode:** This is not a real AI response.');
-   setChats(previous=>previous.map(chat=>chat.id===cid?{...chat,messages:[...chat.messages,{id:id(),role:'assistant',content:reply+'\n\nYour message: '+q.slice(0,350),demo:true}],updated:Date.now()}:chat));
+   const reply=t('यह ऐप अभी Demo मोड में है, इसलिए यह आपके सवाल का वास्तविक AI उत्तर नहीं दे सकता। सेटिंग्स खोलें → AI Provider में Groq, Gemini या OpenRouter चुनें। उसके बाद सर्वर पर उस provider की API key configure करनी होगी। API key के बिना मैं उत्तर गढ़ने या आपका सवाल दोहराने के बजाय साफ़ बता रहा हूँ।','DRAGON AI is currently in Demo mode, so it cannot generate a real answer yet. Open Settings → AI Provider and choose Groq, Gemini, or OpenRouter. That provider must then have a server-side API key configured. Without a key, I will explain the limitation rather than echo your message.');
+   setChats(previous=>previous.map(chat=>chat.id===cid?{...chat,messages:[...chat.messages,{id:id(),role:'assistant',content:reply,demo:true}],updated:Date.now()}:chat));
    return;
   }
   setIsSending(true);
