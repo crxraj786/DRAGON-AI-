@@ -5,6 +5,7 @@ const PROVIDERS = new Set(["groq", "gemini", "openrouter"]);
 const RATE_WINDOW_MS = 60_000;
 const RATE_LIMIT = 12;
 const requestBuckets = new Map();
+const ALLOWED_ORIGINS = new Set(["https://dragon-ai-five.vercel.app", "https://localhost", "capacitor://localhost"]);
 
 function isRateLimited(req) {
   const forwarded = req.headers?.["x-forwarded-for"];
@@ -114,8 +115,21 @@ async function callGemini({ key, messages, signal }) {
 }
 
 export default async function handler(req, res) {
+  const origin = req.headers?.origin;
+  if (origin && !ALLOWED_ORIGINS.has(origin)) return send(res, 403, { error: "Origin not allowed." });
+  if (origin) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Vary", "Origin");
+    res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  }
+  if (req.method === "OPTIONS") {
+    res.setHeader("Allow", "POST, OPTIONS");
+    res.statusCode = 204;
+    return res.end();
+  }
   if (req.method !== "POST") {
-    res.setHeader("Allow", "POST");
+    res.setHeader("Allow", "POST, OPTIONS");
     return send(res, 405, { error: "Method not allowed." });
   }
   if (isRateLimited(req)) return send(res, 429, { error: "Too many requests from this connection. Wait a minute and try again." });
