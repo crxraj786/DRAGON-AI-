@@ -123,7 +123,7 @@ export default async function handler(req, res) {
     if (res.writableEnded) return;
     if (error?.name === "AbortError") return send(res, 504, { error: "AI request timed out. Please retry." });
     const status = Number.isInteger(error?.status) ? error.status : 500;
-    return send(res, status, { error: status >= 500 ? (error.message || "AI service unavailable.") : error.message });
+    return send(res, status, { error: status === 500 ? "AI service unavailable." : (error.message || "Request failed.") });
   } finally {
     clearTimeout(timeout);
   }
