@@ -1,0 +1,125 @@
+const MAX_BODY_BYTES = 64 * 1024;
+const MAX_MESSAGES = 24;
+const MAX_CONTENT_LENGTH = 8000;
+const PROVIDERS = new Set(["groq", "gemini", "openrouter"]);
+
+function send(res, status, payload) {
+  res.statusCode = status;
+  res.setHeader("Content-Type", "application/json; charset=utf-8");
+  res.setHeader("Cache-Control", "no-store");
+  res.end(JSON.stringify(payload));
+}
+
+function readBody(req) {
+  return new Promise((resolve, reject) => {
+    let body = "";
+    let size = 0;
+    req.on("data", (chunk) => {
+      size += chunk.length;
+      if (size > MAX_BODY_BYTES) {
+        reject(Object.assign(new Error("Request body too large"), { status: 413 }));
+        req.destroy();
+        return;
+      }
+      body += chunk.toString("utf8");
+    });
+    req.on("end", () => {
+      try { resolve(JSON.parse(body || "{}")); }
+      catch { reject(Object.assign(new Error("Invalid JSON body"), { status: 400 })); }
+    });
+    req.on("error", reject);
+  });
+}
+
+function normalizeMessages(value) {
+  if (!Array.isArray(value) || value.length < 1 || value.length > MAX_MESSAGES) {
+    throw Object.assign(new Error("Send between 1 and 24 messages."), { status: 400 });
+  }
+  return value.map((item) => {
+    if (!item || !["user", "assistant"].includes(item.role) ||
+        typeof item.content !== "string" || !item.content.trim() ||
+        item.content.length > MAX_CONTENT_LENGTH) {
+      throw Object.assign(new Error("A message is invalid or exceeds 8000 characters."), { status: 400 });
+    }
+    return { role: item.role, content: item.content.trim() };
+  });
+}
+
+async function openAiCompatible({ endpoint, key, model, messages, signal, extraHeaders = {} }) {
+  const response = await fetch(endpoint, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}`, ...extraHeaders },
+    body: JSON.stringify({ model, messages, temperature: 0.4, max_tokens: 2048 }),
+    signal,
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const status = response.status === 429 ? 429 : response.status >= 500 ? 502 : 502;
+    throw Object.assign(new Error(status === 429 ? "AI provider rate limit reached. Try again later." : "AI provider request failed. Check server configuration and try again."), { status });
+  }
+  const content = data?.choices?.[0]?.message?.content;
+  if (typeof content !== "string" || !content.trim()) {
+    throw Object.assign(new Error("AI provider returned an empty response."), { status: 502 });
+  }
+  return content.trim();
+}
+
+async function callGemini({ key, messages, signal }) {
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(key)}`;
+  const contents = messages.map((m) => ({
+    role: m.role === "assistant" ? "model" : "user",
+    parts: [{ text: m.content }],
+  }));
+  const response = await fetch(endpoint, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ contents, generationConfig: { temperature: 0.4, maxOutputTokens: 2048 } }),
+    signal,
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const status = response.status === 429 ? 429 : 502;
+    throw Object.assign(new Error(status === 429 ? "AI provider rate limit reached. Try again later." : "AI provider request failed. Check server configuration and try again."), { status });
+  }
+  const content = data?.candidates?.[0]?.content?.parts?.map((p) => p.text || "").join("");
+  if (typeof content !== "string" || !content.trim()) {
+    throw Object.assign(new Error("AI provider returned an empty response."), { status: 502 });
+  }
+  return content.trim();
+}
+
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    res.setHeader("Allow", "POST");
+    return send(res, 405, { error: "Method not allowed." });
+  }
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 25_000);
+  try {
+    const body = await readBody(req);
+    if (!PROVIDERS.has(body.provider)) return send(res, 400, { error: "Select a supported AI provider." });
+    const messages = normalizeMessages(body.messages);
+    let content;
+    if (body.provider === "groq") {
+      const key = process.env.GROQ_API_KEY;
+      if (!key) return send(res, 503, { error: "Groq is not configured on the server. Add GROQ_API_KEY in deployment environment settings." });
+      content = await openAiCompatible({ endpoint: "https://api.groq.com/openai/v1/chat/completions", key, model: process.env.GROQ_MODEL || "llama-3.3-70b-versatile", messages, signal: controller.signal });
+    } else if (body.provider === "openrouter") {
+      const key = process.env.OPENROUTER_API_KEY;
+      if (!key) return send(res, 503, { error: "OpenRouter is not configured on the server. Add OPENROUTER_API_KEY in deployment environment settings." });
+      content = await openAiCompatible({ endpoint: "https://openrouter.ai/api/v1/chat/completions", key, model: process.env.OPENROUTER_MODEL || "openrouter/auto", messages, signal: controller.signal, extraHeaders: { "HTTP-Referer": process.env.APP_URL || "https://dragon-ai-five.vercel.app", "X-Title": "DRAGON AI" } });
+    } else {
+      const key = process.env.GEMINI_API_KEY;
+      if (!key) return send(res, 503, { error: "Gemini is not configured on the server. Add GEMINI_API_KEY in deployment environment settings." });
+      content = await callGemini({ key, messages, signal: controller.signal });
+    }
+    return send(res, 200, { content, provider: body.provider });
+  } catch (error) {
+    if (res.writableEnded) return;
+    if (error?.name === "AbortError") return send(res, 504, { error: "AI request timed out. Please retry." });
+    const status = Number.isInteger(error?.status) ? error.status : 500;
+    return send(res, status, { error: status >= 500 ? (error.message || "AI service unavailable.") : error.message });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
