@@ -31,7 +31,7 @@ test('API rejects methods other than POST', async () => {
   const res = mockResponse();
   await handler(mockRequest('GET'), res);
   assert.equal(res.statusCode, 405);
-  assert.equal(res.headers.Allow, 'POST');
+  assert.equal(res.headers.Allow, 'POST, OPTIONS');
 });
 
 test('API rejects unsupported providers before making network requests', async () => {
