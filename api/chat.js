@@ -2,6 +2,26 @@ const MAX_BODY_BYTES = 64 * 1024;
 const MAX_MESSAGES = 24;
 const MAX_CONTENT_LENGTH = 8000;
 const PROVIDERS = new Set(["groq", "gemini", "openrouter"]);
+const RATE_WINDOW_MS = 60_000;
+const RATE_LIMIT = 12;
+const requestBuckets = new Map();
+
+function isRateLimited(req) {
+  const forwarded = req.headers?.["x-forwarded-for"];
+  const address = (typeof forwarded === "string" ? forwarded.split(",")[0] : "") || req.socket?.remoteAddress || "unknown";
+  const now = Date.now();
+  const bucket = requestBuckets.get(address);
+  if (!bucket || now - bucket.startedAt >= RATE_WINDOW_MS) {
+    if (requestBuckets.size > 1000) {
+      for (const [key, item] of requestBuckets) if (now - item.startedAt >= RATE_WINDOW_MS) requestBuckets.delete(key);
+      if (requestBuckets.size > 1000) requestBuckets.clear();
+    }
+    requestBuckets.set(address, { startedAt: now, count: 1 });
+    return false;
+  }
+  bucket.count += 1;
+  return bucket.count > RATE_LIMIT;
+}
 
 function send(res, status, payload) {
   res.statusCode = status;
@@ -70,7 +90,7 @@ async function openAiCompatible({ endpoint, key, model, messages, signal, extraH
 }
 
 async function callGemini({ key, messages, signal }) {
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(key)}`;
+  const endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
   const contents = messages.map((m) => ({
     role: m.role === "assistant" ? "model" : "user",
     parts: [{ text: m.content }],
