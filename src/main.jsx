@@ -10,7 +10,8 @@ function App(){
  const[settings,setSettings]=useState(()=>({...defaults,...read(CONFIG,{})}));
  const[chats,setChats]=useState(()=>read(HISTORY,[]));const[active,setActive]=useState(()=>read(HISTORY,[])[0]?.id||'');
  const[draft,setDraft]=useState('');const[panel,setPanel]=useState('');const[error,setError]=useState('');const[isSending,setIsSending]=useState(false);const abortRef=useRef(null);const[online,setOnline]=useState(navigator.onLine);
- const t=(hi,en)=>settings.lang==='hi'?hi:en;\n useEffect(()=>()=>abortRef.current?.abort(),[]);
+ const t=(hi,en)=>settings.lang==='hi'?hi:en;
+ useEffect(()=>()=>abortRef.current?.abort(),[]);
  useEffect(()=>{const on=()=>setOnline(true),off=()=>setOnline(false);window.addEventListener('online',on);window.addEventListener('offline',off);return()=>{window.removeEventListener('online',on);window.removeEventListener('offline',off)}},[]);
  useEffect(()=>{const configWrite=writeStorage(CONFIG,normalizeSettings(settings));const historyWrite=settings.save?writeStorage(HISTORY,normalizeHistory(chats)):(removeStorage(HISTORY),{ok:true});if(!configWrite.ok||!historyWrite.ok)setError(t('डिवाइस स्टोरेज में समस्या है। Export करके जगह खाली करें।','Device storage failed. Export data and free some space.'))},[settings,chats]);
  const current=chats.find(c=>c.id===active);const id=createId;
