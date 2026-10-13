@@ -61,3 +61,31 @@ test('API reports missing server-side key without exposing a secret', async () =
     if (previous !== undefined) process.env.GROQ_API_KEY = previous;
   }
 });
+
+test('API rejects malformed JSON with a client error', async () => {
+  const req = new EventEmitter();
+  req.method = 'POST';
+  req.destroy = () => {};
+  queueMicrotask(() => {
+    req.emit('data', Buffer.from('{not-json'));
+    req.emit('end');
+  });
+  const res = mockResponse();
+  await handler(req, res);
+  assert.equal(res.statusCode, 400);
+  assert.match(res.body.error, /JSON/i);
+});
+
+test('API rejects oversized request bodies', async () => {
+  const req = new EventEmitter();
+  req.method = 'POST';
+  req.destroy = () => {};
+  queueMicrotask(() => {
+    req.emit('data', Buffer.alloc(65 * 1024, 97));
+    req.emit('end');
+  });
+  const res = mockResponse();
+  await handler(req, res);
+  assert.equal(res.statusCode, 413);
+  assert.match(res.body.error, /too large/i);
+});
