@@ -89,3 +89,22 @@ test('API rejects oversized request bodies', async () => {
   assert.equal(res.statusCode, 413);
   assert.match(res.body.error, /too large/i);
 });
+
+test('API throttles repeated requests from one client bucket', async () => {
+  const previous = process.env.GROQ_API_KEY;
+  delete process.env.GROQ_API_KEY;
+  try {
+    let last;
+    for (let i = 0; i < 13; i += 1) {
+      const req = mockRequest('POST', { provider: 'groq', messages: [{ role: 'user', content: 'hello' }] });
+      req.headers['x-forwarded-for'] = '198.51.100.123';
+      const res = mockResponse();
+      await handler(req, res);
+      last = res;
+    }
+    assert.equal(last.statusCode, 429);
+    assert.match(last.body.error, /too many requests/i);
+  } finally {
+    if (previous !== undefined) process.env.GROQ_API_KEY = previous;
+  }
+});
