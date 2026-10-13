@@ -14,16 +14,21 @@ function readBody(req) {
   return new Promise((resolve, reject) => {
     let body = "";
     let size = 0;
+    let tooLarge = false;
     req.on("data", (chunk) => {
       size += chunk.length;
       if (size > MAX_BODY_BYTES) {
-        reject(Object.assign(new Error("Request body too large"), { status: 413 }));
-        req.destroy();
+        tooLarge = true;
+        body = "";
         return;
       }
-      body += chunk.toString("utf8");
+      if (!tooLarge) body += chunk.toString("utf8");
     });
     req.on("end", () => {
+      if (tooLarge) {
+        reject(Object.assign(new Error("Request body too large"), { status: 413 }));
+        return;
+      }
       try { resolve(JSON.parse(body || "{}")); }
       catch { reject(Object.assign(new Error("Invalid JSON body"), { status: 400 })); }
     });
