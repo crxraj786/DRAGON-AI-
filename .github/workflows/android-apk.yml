@@ -28,7 +28,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -43,6 +42,8 @@ jobs:
         run: npm install --no-save @capacitor/core@7 @capacitor/cli@7 @capacitor/android@7
 
       - name: Run tests and build web app
+        env:
+          VITE_API_BASE_URL: https://dragon-ai-five.vercel.app
         run: npm run build
 
       - name: Generate Android project
