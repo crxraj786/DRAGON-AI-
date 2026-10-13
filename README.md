@@ -34,6 +34,12 @@ npm run build
 npm run dev
 ```
 
+## Android APK build
+
+A GitHub Actions workflow builds a **debug APK artifact** on pushes that touch app files or when manually started from the Actions tab. Open the repository's Actions page, select **Build Android APK**, then choose **Run workflow**. When it succeeds, open the run and download the `dragon-ai-android-debug-apk` artifact. This is a debug build, not a Play Store release or signed production APK.
+
+The APK bundles the web UI and calls the deployed server API at `https://dragon-ai-five.vercel.app`. Real model replies still require a provider API key configured only in the Vercel server environment. The APK workflow does not configure or embed secrets. Android 10 compatibility must still be confirmed by installing and testing on a device.
+
 ## Deployment
 
 Production app: https://dragon-ai-five.vercel.app  
