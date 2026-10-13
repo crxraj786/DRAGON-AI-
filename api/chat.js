@@ -118,10 +118,12 @@ export default async function handler(req, res) {
     res.setHeader("Allow", "POST");
     return send(res, 405, { error: "Method not allowed." });
   }
+  if (isRateLimited(req)) return send(res, 429, { error: "Too many requests from this connection. Wait a minute and try again." });
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 25_000);
   try {
     const body = await readBody(req);
+    if (!body || typeof body !== "object" || Array.isArray(body)) return send(res, 400, { error: "Request body must be a JSON object." });
     if (!PROVIDERS.has(body.provider)) return send(res, 400, { error: "Select a supported AI provider." });
     const messages = normalizeMessages(body.messages);
     let content;
