@@ -43,7 +43,7 @@ function App(){
   abortRef.current=controller;
   try{
    const conversation=updatedChat.messages.filter(message=>['user','assistant'].includes(message.role)).slice(-24).map(message=>({role:message.role,content:message.content}));
-   const response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({provider:settings.provider,messages:conversation}),signal:controller.signal});
+   const response=await fetch((import.meta.env.VITE_API_BASE_URL||'')+'/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({provider:settings.provider,messages:conversation}),signal:controller.signal});
    const data=await response.json().catch(()=>({}));
    if(!response.ok)throw new Error(data.error||'AI request failed.');
    if(typeof data.content!=='string'||!data.content.trim())throw new Error('AI provider returned an empty response.');
