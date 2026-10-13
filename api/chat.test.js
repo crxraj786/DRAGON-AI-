@@ -23,7 +23,7 @@ function mockResponse() {
     headers: {},
     writableEnded: false,
     setHeader(key, value) { this.headers[key] = value; },
-    end(value) { this.body = JSON.parse(value); this.writableEnded = true; },
+    end(value) { this.body = value ? JSON.parse(value) : undefined; this.writableEnded = true; },
   };
 }
 
@@ -107,4 +107,22 @@ test('API throttles repeated requests from one client bucket', async () => {
   } finally {
     if (previous !== undefined) process.env.GROQ_API_KEY = previous;
   }
+});
+
+test('API handles Android CORS preflight requests', async () => {
+  const req = mockRequest('OPTIONS');
+  req.headers.origin = 'https://localhost';
+  const res = mockResponse();
+  await handler(req, res);
+  assert.equal(res.statusCode, 204);
+  assert.equal(res.headers['Access-Control-Allow-Origin'], 'https://localhost');
+  assert.match(res.headers['Access-Control-Allow-Methods'], /POST/);
+});
+
+test('API rejects unapproved browser origins', async () => {
+  const req = mockRequest('POST', { provider: 'groq', messages: [{ role: 'user', content: 'hello' }] });
+  req.headers.origin = 'https://malicious.example';
+  const res = mockResponse();
+  await handler(req, res);
+  assert.equal(res.statusCode, 403);
 });
