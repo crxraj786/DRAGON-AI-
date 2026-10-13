@@ -7,3 +7,8 @@
 .composer .attach:hover{background:#1b2b46;color:#dce8ff}
 .composer .attach:disabled{opacity:.45}
 .composer>small{left:48px}
+
+.chat-search{display:flex;align-items:center;gap:8px;margin:0 0 10px;padding:9px 10px;border:1px solid #2b3850;border-radius:9px;background:#101a2c;color:#8296b8}
+.chat-search:focus-within{border-color:#587bd0}
+.chat-search input{width:100%;min-width:0;border:0;outline:0;background:transparent;color:#e6edfa;font-size:12px}
+.chat-search input::placeholder{color:#74839f}
