@@ -126,3 +126,67 @@ test('API rejects unapproved browser origins', async () => {
   await handler(req, res);
   assert.equal(res.statusCode, 403);
 });
+
+
+test('Gemini provider returns a real-shaped multilingual completion and keeps the key server-side', async () => {
+  const previousKey = process.env.GEMINI_API_KEY;
+  const previousFetch = globalThis.fetch;
+  process.env.GEMINI_API_KEY = 'test-server-only-key';
+  let captured;
+  globalThis.fetch = async (url, options) => {
+    captured = { url, options };
+    return {
+      ok: true,
+      status: 200,
+      async json() {
+        return { candidates: [{ content: { parts: [{ text: 'नमस्ते! मैं आपकी मदद कर सकता हूँ।' }] } }] };
+      },
+    };
+  };
+  try {
+    const req = mockRequest('POST', {
+      provider: 'gemini',
+      messages: [{ role: 'user', content: 'नमस्ते, हिंदी में जवाब दो।' }],
+    });
+    const res = mockResponse();
+    await handler(req, res);
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.body.content, 'नमस्ते! मैं आपकी मदद कर सकता हूँ।');
+    assert.equal(res.body.provider, 'gemini');
+    assert.match(captured.url, /models\/gemini-3\.8-flash:generateContent$/);
+    assert.equal(captured.options.headers['x-goog-api-key'], 'test-server-only-key');
+    assert.equal(JSON.stringify(res.body).includes('test-server-only-key'), false);
+    const requestBody = JSON.parse(captured.options.body);
+    assert.match(requestBody.systemInstruction.parts[0].text, /same language/i);
+    assert.equal(requestBody.contents[0].parts[0].text, 'नमस्ते, हिंदी में जवाब दो।');
+  } finally {
+    globalThis.fetch = previousFetch;
+    if (previousKey === undefined) delete process.env.GEMINI_API_KEY;
+    else process.env.GEMINI_API_KEY = previousKey;
+  }
+});
+
+test('Gemini provider maps provider rate limits to HTTP 429 without leaking provider details', async () => {
+  const previousKey = process.env.GEMINI_API_KEY;
+  const previousFetch = globalThis.fetch;
+  process.env.GEMINI_API_KEY = 'test-server-only-key';
+  globalThis.fetch = async () => ({
+    ok: false,
+    status: 429,
+    async json() { return { error: { message: 'private provider detail' } }; },
+  });
+  try {
+    const res = mockResponse();
+    await handler(mockRequest('POST', {
+      provider: 'gemini',
+      messages: [{ role: 'user', content: 'Hello' }],
+    }), res);
+    assert.equal(res.statusCode, 429);
+    assert.match(res.body.error, /rate limit/i);
+    assert.equal(JSON.stringify(res.body).includes('private provider detail'), false);
+  } finally {
+    globalThis.fetch = previousFetch;
+    if (previousKey === undefined) delete process.env.GEMINI_API_KEY;
+    else process.env.GEMINI_API_KEY = previousKey;
+  }
+});
