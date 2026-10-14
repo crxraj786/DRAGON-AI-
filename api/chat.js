@@ -92,7 +92,7 @@ async function openAiCompatible({ endpoint, key, model, messages, signal, extraH
 }
 
 async function callGemini({ key, messages, signal }) {
-  const endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+  const endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent";
   const contents = messages.map((m) => ({
     role: m.role === "assistant" ? "model" : "user",
     parts: [{ text: m.content }],
