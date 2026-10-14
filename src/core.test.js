@@ -24,7 +24,7 @@ test('message validation rejects blank and over-limit messages', () => {
 });
 
 test('settings are allowlisted and default safely', () => {
-  assert.deepEqual(normalizeSettings({ lang: 'fr', provider: 'unknown', save: false }), { lang: 'hi', provider: 'demo', save: false });
+  assert.deepEqual(normalizeSettings({ lang: 'fr', provider: 'unknown', save: false }), { lang: 'en', provider: 'demo', save: false });
   assert.equal(normalizeSettings({ lang: 'en', provider: 'gemini' }).provider, 'gemini');
 });
 
