@@ -17,7 +17,7 @@ The endpoint is implemented, but live provider replies require a key configured 
 
 Choose one or more:
 - `GROQ_API_KEY` (optional `GROQ_MODEL`; default `llama-3.3-70b-versatile`)
-- `GEMINI_API_KEY` (Gemini 2.0 Flash endpoint)
+- `GEMINI_API_KEY` (Gemini 3.8 Flash endpoint)
 - `OPENROUTER_API_KEY` (optional `OPENROUTER_MODEL`; default `openrouter/auto`)
 - `APP_URL` (optional, used as OpenRouter referrer)
 
