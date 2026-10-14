@@ -8,7 +8,7 @@ export const STORAGE_KEYS = Object.freeze({
 });
 
 export const DEFAULT_SETTINGS = Object.freeze({
-  lang: 'hi',
+  lang: 'en',
   provider: 'demo',
   save: true,
 });
@@ -81,7 +81,7 @@ export function validateMessage(value) {
 export function normalizeSettings(value) {
   const input = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
   return {
-    lang: input.lang === 'en' ? 'en' : 'hi',
+    lang: input.lang === 'hi' ? 'hi' : 'en',
     // Never silently imply that an unknown provider is configured.
     provider: ['demo', 'groq', 'gemini', 'openrouter'].includes(input.provider) ? input.provider : 'demo',
     save: input.save !== false,
