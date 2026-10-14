@@ -9,7 +9,7 @@ export const STORAGE_KEYS = Object.freeze({
 
 export const DEFAULT_SETTINGS = Object.freeze({
   lang: 'en',
-  provider: 'demo',
+  provider: 'gemini',
   save: true,
 });
 
@@ -82,8 +82,8 @@ export function normalizeSettings(value) {
   const input = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
   return {
     lang: input.lang === 'hi' ? 'hi' : 'en',
-    // Never silently imply that an unknown provider is configured.
-    provider: ['demo', 'groq', 'gemini', 'openrouter'].includes(input.provider) ? input.provider : 'demo',
+    // Gemini is the configured real-AI default; provider selection is internal.
+    provider: ['groq', 'gemini', 'openrouter'].includes(input.provider) ? input.provider : 'gemini',
     save: input.save !== false,
   };
 }
