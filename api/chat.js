@@ -100,7 +100,7 @@ async function callGemini({ key, messages, signal }) {
   const response = await fetch(endpoint, {
     method: "POST",
     headers: { "Content-Type": "application/json", "x-goog-api-key": key },
-    body: JSON.stringify({ systemInstruction: { parts: [{ text: SYSTEM_INSTRUCTION }] }, contents, generationConfig: { temperature: 0.4, maxOutputTokens: 2048 } }),
+    body: JSON.stringify({ systemInstruction: { parts: [{ text: SYSTEM_INSTRUCTION }] }, contents, generationConfig: { maxOutputTokens: 2048 } }),
     signal,
   });
   const data = await response.json().catch(() => ({}));
