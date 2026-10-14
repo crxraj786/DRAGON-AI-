@@ -55,7 +55,8 @@ test('API reports missing server-side key without exposing a secret', async () =
     const res = mockResponse();
     await handler(mockRequest('POST', { provider: 'groq', messages: [{ role: 'user', content: 'hello' }] }), res);
     assert.equal(res.statusCode, 503);
-    assert.match(res.body.error, /GROQ_API_KEY/);
+    assert.match(res.body.error, /temporarily unavailable/i);
+    assert.equal(JSON.stringify(res.body).includes('GROQ_API_KEY'), false);
     assert.equal(JSON.stringify(res.body).includes('Bearer'), false);
   } finally {
     if (previous !== undefined) process.env.GROQ_API_KEY = previous;
