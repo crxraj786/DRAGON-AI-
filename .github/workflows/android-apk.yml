@@ -54,8 +54,14 @@ jobs:
       - name: Generate Dragon launcher icon
         run: |
           mkdir -p assets
-          node --input-type=module -e "import fs from 'node:fs'; import sharp from 'sharp'; const src=fs.readFileSync('src/main.jsx','utf8'); const match=src.match(/const LOGO_DATA='data:image\\/jpeg;base64,([^']+)'/); if(!match) throw new Error('Embedded Dragon logo not found'); await sharp(Buffer.from(match[1],'base64'), { failOn: 'none' }).resize(1024, 1024, { fit: 'contain', background: '#f4f0e6' }).png().toFile('assets/icon-only.png')"
-          npx capacitor-assets generate --android
+          node --input-type=module -e "import fs from 'node:fs'; import sharp from 'sharp'; const src=fs.readFileSync('src/main.jsx','utf8'); const match=src.match(/const LOGO_DATA='data:image\\/jpeg;base64,([^']+)'/); if(!match) throw new Error('Embedded Dragon logo not found'); const logo=Buffer.from(match[1],'base64'); await sharp(logo, { failOn: 'none' }).resize(1024, 1024, { fit: 'contain', background: '#f4f0e6' }).png().toFile('assets/icon-only.png'); await sharp(logo, { failOn: 'none' }).resize(1024, 1024, { fit: 'contain', background: { r: 244, g: 240, b: 230, alpha: 0 } }).png().toFile('assets/icon-foreground.png'); await sharp({ create: { width: 1024, height: 1024, channels: 4, background: '#f4f0e6' } }).png().toFile('assets/icon-background.png');"
+          npx capacitor-assets generate --android --iconBackgroundColor '#f4f0e6'
+
+      - name: Verify adaptive launcher icon was generated
+        run: |
+          test -f android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
+          test -f android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
+          grep -R "ic_launcher_foreground" android/app/src/main/res/mipmap-anydpi-v26/
 
       - name: Sync web assets
         run: npx cap sync android
