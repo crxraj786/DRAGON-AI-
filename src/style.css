@@ -25,3 +25,42 @@
 .md-inline-code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.9em;background:#111d31;border:1px solid #2b3b57;border-radius:5px;padding:2px 5px;color:#c8ddff}
 .md-code{margin:10px 0 12px;padding:12px;overflow:auto;white-space:pre;border:1px solid #2b3b57;border-radius:9px;background:#080e19;color:#d9e6fb;font:12px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace}
 .md-code code{font:inherit}
+
+/* Professional chat hierarchy and mobile-first message alignment */
+.message{align-items:flex-start;gap:12px}
+.message .bubble{border-radius:18px;box-shadow:0 8px 28px #00000016;transition:border-color .18s ease,background .18s ease}
+.message.assistant .bubble{background:linear-gradient(145deg,#121d31 0%,#0f1728 100%);border-color:#2a3a58;border-top-left-radius:5px}
+.message.user{flex-direction:row-reverse;margin-left:auto;max-width:min(760px,94%)}
+.message.user .bubble{flex:0 1 auto;max-width:100%;background:linear-gradient(145deg,#263b67 0%,#1b2b4b 100%);border-color:#3a5484;border-top-right-radius:5px;border-top-left-radius:18px}
+.message.user .role{color:#d6e4ff}
+.message.assistant .role{color:#9dbaff}
+.message-meta{display:flex;align-items:center;justify-content:space-between;min-height:16px;margin-bottom:11px}
+.message-meta .role{margin:0;font-size:11px;letter-spacing:.9px;text-transform:uppercase}
+.markdown-body{font-size:14px;line-height:1.8;color:#e2e9f6}
+.markdown-body p{margin:0 0 11px;white-space:normal}
+.markdown-body p:last-child{margin-bottom:0}
+.markdown-body strong{color:#f5f8ff;font-weight:700}
+.markdown-body ul,.markdown-body ol{padding-left:23px;margin:8px 0 14px}
+.markdown-body li{padding-left:3px;margin:5px 0}
+.message.user .markdown-body{color:#f0f5ff}
+.message.user .copy{color:#c1d1ef}
+.avatar{box-shadow:0 4px 15px #0003}
+.message.user .avatar{background:#17243a;border-color:#40567a;color:#e0eaff}
+.message.assistant .avatar{background:linear-gradient(145deg,#1b3157,#18213a);border-color:#4568a5;color:#b8d0ff}
+.composer{border-radius:21px;border-color:#354866;background:linear-gradient(150deg,#121d30,#0e1727);box-shadow:0 12px 40px #0004}
+.composer:focus-within{border-color:#718ee9;box-shadow:0 0 0 3px #6685e61c,0 12px 40px #0004}
+.composer textarea{font-size:15px}
+.composer .send{border-radius:13px;background:linear-gradient(135deg,#557cf0,#7a55e8);box-shadow:0 5px 20px #4d64d74a}
+header{background:#0c1424e8}
+.settings{backdrop-filter:blur(18px)}
+@media(max-width:720px){
+ .messages{gap:21px;padding:23px 12px}
+ .message{gap:8px;max-width:100%}
+ .message .avatar{width:31px;height:31px;border-radius:10px}
+ .message .bubble{padding:13px 14px;border-radius:16px}
+ .message.assistant .bubble{border-top-left-radius:5px}
+ .message.user{max-width:92%}
+ .message.user .bubble{border-top-right-radius:5px;border-top-left-radius:16px}
+ .markdown-body{font-size:14px;line-height:1.75}
+ .composer{width:calc(100% - 20px);border-radius:20px}
+}
