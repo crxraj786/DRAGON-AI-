@@ -1,15 +1,17 @@
 # DRAGON AI
 
-Mobile-first, Hindi/English AI assistant built with React, Vite, and Vercel serverless functions. The project is developed in small, verifiable stages and does not claim unavailable features as complete.
+Mobile-first, Hindi/English AI assistant built with React, Vite, Capacitor, and Vercel serverless functions. The project is developed in small, verifiable stages and does not claim unavailable features as complete.
 
 ## Current implementation
 
-- Responsive chat UI, local conversation history and settings
-- Hindi/English interface preference, JSON export, delete confirmation and network status
+- Responsive Android-first chat UI, local conversation history and settings
+- Hindi/English interface preference; model instruction supports Hindi, Hinglish, English, French, Italian, Portuguese, and mixed-language prompts
+- JSON export, delete confirmation, network status and basic offline awareness
 - Defensive client-side storage/input utilities with Node unit tests
-- `POST /api/chat` server-side endpoint for Groq, Gemini and OpenRouter, with a multilingual response instruction
+- `POST /api/chat` server-side endpoint for Groq, Gemini and OpenRouter
 - API keys are read only from server environment variables; never put keys in frontend code or `VITE_*` variables
-- Demo mode is clearly labelled and remains available without a provider key
+- Demo mode remains available without a provider key
+- Public privacy policy: https://dragon-ai-five.vercel.app/privacy-policy.html
 
 ## Configure a real provider on Vercel
 
@@ -23,6 +25,24 @@ Choose one or more:
 
 Only use a provider/model whose current terms and free quota meet your needs. Free quota and model availability can change. Adding a key is an explicit setup step and may require a provider account; no provider is assumed to be free forever. After changing environment variables, redeploy the Vercel project.
 
+## Android APK build
+
+A GitHub Actions workflow builds a **debug APK artifact** on pushes that touch app files or when manually started from the Actions tab. Open the repository's Actions page, select **Build Android APK**, then choose **Run workflow**. When it succeeds, open the run and download the `dragon-ai-android-debug-apk` artifact. This is a debug build, not a Play Store release or signed production APK.
+
+The APK bundles the web UI and calls the deployed server API at `https://dragon-ai-five.vercel.app`. Real model replies still require a provider API key configured only in the Vercel server environment. The APK workflow does not configure or embed secrets. Android 10 compatibility must still be confirmed by installing and testing on a device.
+
+## Play Store release status
+
+**Not yet ready to publish.** A successful debug APK build is only a development milestone. Remaining release gates include:
+- Build and verify a signed Android App Bundle (AAB) for Play Console, with a secure upload key and reproducible versioning
+- Install and test on a real Android 10 device, including cold start, splash screen, chat, offline/error paths and app update behavior
+- Run end-to-end tests against a real Gemini response; current automated provider tests use mocked responses
+- Complete production security review, distributed rate limiting, abuse controls and operational monitoring
+- Confirm app name/package ID, app icon, screenshots, store description, support contact and privacy disclosures
+- Verify Google Play developer account, package registration, testing-track requirements, Data safety form and all current policy declarations
+
+Google Play requires signed app artifacts; a debug APK must not be represented as a store-ready release. The privacy policy is an initial description of the currently implemented service and must be reviewed again before submission.
+
 ## Local development
 
 Requires Node.js 20+ and npm.
@@ -34,12 +54,6 @@ npm run build
 npm run dev
 ```
 
-## Android APK build
-
-A GitHub Actions workflow builds a **debug APK artifact** on pushes that touch app files or when manually started from the Actions tab. Open the repository's Actions page, select **Build Android APK**, then choose **Run workflow**. When it succeeds, open the run and download the `dragon-ai-android-debug-apk` artifact. This is a debug build, not a Play Store release or signed production APK.
-
-The APK bundles the web UI and calls the deployed server API at `https://dragon-ai-five.vercel.app`. Real model replies still require a provider API key configured only in the Vercel server environment. The APK workflow does not configure or embed secrets. Android 10 compatibility must still be confirmed by installing and testing on a device.
-
 ## Deployment
 
 Production app: https://dragon-ai-five.vercel.app  
@@ -49,9 +63,9 @@ Vercel automatically deploys commits pushed to `main`. GitHub Actions separately
 
 ## Security and current limitations
 
-The API endpoint validates provider and message shape/length, caps request size, times out provider calls, and returns sanitized error messages. It does **not yet** provide distributed rate limiting, user authentication, per-user quotas, abuse detection, or audit logs; do not treat this as a hardened public production API until those are added. Never commit secrets.
+The API endpoint validates provider and message shape/length, caps request size, times out provider calls, and returns sanitized provider error messages. It does **not yet** provide distributed rate limiting, user authentication, per-user quotas, abuse detection, or audit logs; do not treat this as a hardened public production API until those are added. Never commit secrets.
 
-Not yet implemented: account system, cloud-synced history, file/document analysis, web research, image/audio/video tools, safe code execution, agents/automation, admin/workspace permissions, full accessibility/E2E testing, and Android APK build/signing/installation validation.
+Not yet implemented: account system, cloud-synced history, file/document analysis, web research, image/audio/video tools, safe code execution, agents/automation, admin/workspace permissions, full accessibility/E2E testing, signed Play Store release and Android installation validation.
 
 ## Project principles
 
