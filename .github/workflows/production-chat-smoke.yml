@@ -1,0 +1,55 @@
+name: Production AI smoke test
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "api/chat.js"
+      - ".github/workflows/production-chat-smoke.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  live-gemini-chat:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Wait for Vercel production deployment
+        run: sleep 45
+
+      - name: Verify real production chat response
+        run: |
+          node --input-type=module <<'NODE'
+          const endpoint = 'https://dragon-ai-five.vercel.app/api/chat';
+          const controller = new AbortController();
+          const timeout = setTimeout(() => controller.abort(), 35000);
+          try {
+            const response = await fetch(endpoint, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                provider: 'gemini',
+                messages: [{ role: 'user', content: 'Reply with exactly DRAGON_OK' }]
+              }),
+              signal: controller.signal
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) {
+              console.error('Production chat returned HTTP', response.status, '-', data.error || 'No safe error detail');
+              process.exitCode = 1;
+            } else if (typeof data.content !== 'string' || !data.content.trim()) {
+              console.error('Production chat returned no assistant content.');
+              process.exitCode = 1;
+            } else {
+              console.log('PASS: production API returned a real Gemini response.');
+              console.log('Response preview:', data.content.slice(0, 120));
+            }
+          } catch (error) {
+            console.error('Production chat smoke test failed:', error.name === 'AbortError' ? 'request timed out' : error.message);
+            process.exitCode = 1;
+          } finally {
+            clearTimeout(timeout);
+          }
+          NODE

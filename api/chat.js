@@ -82,7 +82,7 @@ async function openAiCompatible({ endpoint, key, model, messages, signal, extraH
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
     const status = response.status === 429 ? 429 : response.status >= 500 ? 502 : 502;
-    throw Object.assign(new Error(status === 429 ? "AI provider rate limit reached. Try again later." : "AI provider request failed. Check server configuration and try again."), { status });
+    throw Object.assign(new Error(status === 429 ? "AI provider rate limit reached. Try again later." : "The AI service is temporarily unavailable. Please try again shortly."), { status });
   }
   const content = data?.choices?.[0]?.message?.content;
   if (typeof content !== "string" || !content.trim()) {
@@ -106,7 +106,7 @@ async function callGemini({ key, messages, signal }) {
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
     const status = response.status === 429 ? 429 : 502;
-    throw Object.assign(new Error(status === 429 ? "AI provider rate limit reached. Try again later." : "AI provider request failed. Check server configuration and try again."), { status });
+    throw Object.assign(new Error(status === 429 ? "AI provider rate limit reached. Try again later." : "The AI service is temporarily unavailable. Please try again shortly."), { status });
   }
   const content = data?.candidates?.[0]?.content?.parts?.map((p) => p.text || "").join("");
   if (typeof content !== "string" || !content.trim()) {
@@ -144,15 +144,15 @@ export default async function handler(req, res) {
     let content;
     if (body.provider === "groq") {
       const key = process.env.GROQ_API_KEY;
-      if (!key) return send(res, 503, { error: "Groq is not configured on the server. Add GROQ_API_KEY in deployment environment settings." });
+      if (!key) return send(res, 503, { error: "The selected AI service is temporarily unavailable." });
       content = await openAiCompatible({ endpoint: "https://api.groq.com/openai/v1/chat/completions", key, model: process.env.GROQ_MODEL || "llama-3.3-70b-versatile", messages, signal: controller.signal });
     } else if (body.provider === "openrouter") {
       const key = process.env.OPENROUTER_API_KEY;
-      if (!key) return send(res, 503, { error: "OpenRouter is not configured on the server. Add OPENROUTER_API_KEY in deployment environment settings." });
+      if (!key) return send(res, 503, { error: "The selected AI service is temporarily unavailable." });
       content = await openAiCompatible({ endpoint: "https://openrouter.ai/api/v1/chat/completions", key, model: process.env.OPENROUTER_MODEL || "openrouter/auto", messages, signal: controller.signal, extraHeaders: { "HTTP-Referer": process.env.APP_URL || "https://dragon-ai-five.vercel.app", "X-Title": "DRAGON AI" } });
     } else {
       const key = process.env.GEMINI_API_KEY;
-      if (!key) return send(res, 503, { error: "Gemini is not configured on the server. Add GEMINI_API_KEY in deployment environment settings." });
+      if (!key) return send(res, 503, { error: "The selected AI service is temporarily unavailable." });
       content = await callGemini({ key, messages, signal: controller.signal });
     }
     return send(res, 200, { content, provider: body.provider });
