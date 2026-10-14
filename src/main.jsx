@@ -72,7 +72,7 @@ function App(){
    const conversation=updatedChat.messages.filter(message=>['user','assistant'].includes(message.role)).slice(-24).map(message=>({role:message.role,content:message.content}));
    const response=await fetch((import.meta.env.VITE_API_BASE_URL||'https://dragon-ai-five.vercel.app')+'/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({provider:settings.provider,messages:conversation}),signal:controller.signal});
    const data=await response.json().catch(()=>({}));
-   if(!response.ok){const message=response.status===429?'Too many requests right now. Please wait a moment and try again.':response.status===401||response.status===403?'The AI service is temporarily unavailable. Please try again later.':response.status>=500?'DRAGON AI is having trouble responding right now. Please try again shortly.':'Your message could not be processed. Please try again.';throw new Error(message);}
+   if(!response.ok){const message=response.status===429?'Too many requests right now. Please wait a moment and try again.':response.status===401||response.status===403?'The AI service is temporarily unavailable. Please try again later.':(typeof data.error==='string'&&data.error.trim())?data.error:response.status>=500?'DRAGON AI is having trouble responding right now. Please try again shortly.':'Your message could not be processed. Please try again.';throw new Error(message);}
    if(typeof data.content!=='string'||!data.content.trim())throw new Error('AI provider returned an empty response.');
    setChats(previous=>previous.map(chat=>chat.id===cid?{...chat,messages:[...chat.messages,{id:id(),role:'assistant',content:data.content}],updated:Date.now()}:chat));
   }catch(err){
