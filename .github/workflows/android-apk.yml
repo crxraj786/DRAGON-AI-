@@ -6,6 +6,8 @@ on:
     branches: [main]
     paths:
       - "src/**"
+      - "public/**"
+      - "assets/**"
       - "api/**"
       - "index.html"
       - "package.json"
@@ -39,7 +41,7 @@ jobs:
         run: npm install
 
       - name: Install Capacitor toolchain
-        run: npm install --no-save @capacitor/core@7 @capacitor/cli@7 @capacitor/android@7
+        run: npm install --no-save @capacitor/core@7 @capacitor/cli@7 @capacitor/android@7 @capacitor/assets@3 sharp
 
       - name: Run tests and build web app
         env:
@@ -48,6 +50,12 @@ jobs:
 
       - name: Generate Android project
         run: npx cap add android
+
+      - name: Generate Dragon launcher icon
+        run: |
+          mkdir -p assets
+          node --input-type=module -e "import sharp from 'sharp'; await sharp('public/dragon-logo.svg').resize(1024, 1024, { fit: 'contain', background: '#f4f0e6' }).png().toFile('assets/icon-only.png')"
+          npx capacitor-assets generate --android
 
       - name: Sync web assets
         run: npx cap sync android
