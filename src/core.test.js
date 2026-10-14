@@ -23,9 +23,10 @@ test('message validation rejects blank and over-limit messages', () => {
   assert.equal(validateMessage(42).reason, 'invalid-type');
 });
 
-test('settings are allowlisted and default safely', () => {
-  assert.deepEqual(normalizeSettings({ lang: 'fr', provider: 'unknown', save: false }), { lang: 'en', provider: 'demo', save: false });
-  assert.equal(normalizeSettings({ lang: 'en', provider: 'gemini' }).provider, 'gemini');
+test('settings are allowlisted and default to the configured real AI', () => {
+  assert.deepEqual(normalizeSettings({ lang: 'fr', provider: 'unknown', save: false }), { lang: 'en', provider: 'gemini', save: false });
+  assert.equal(normalizeSettings({}).provider, 'gemini');
+  assert.equal(normalizeSettings({ lang: 'en', provider: 'groq' }).provider, 'groq');
 });
 
 test('history normalization drops malformed records and caps fields', () => {
@@ -48,6 +49,7 @@ test('export is versioned and contains normalized data', () => {
   assert.equal(payload.schemaVersion, 1);
   assert.equal(payload.exportedAt, '2026-01-02T03:04:05.000Z');
   assert.equal(payload.chats[0].id, 'c1');
+  assert.equal(payload.settings.provider, 'gemini');
 });
 
 test('id generator returns a non-empty string', () => {
