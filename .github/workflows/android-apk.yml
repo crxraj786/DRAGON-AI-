@@ -54,7 +54,7 @@ jobs:
       - name: Generate Dragon launcher icon
         run: |
           mkdir -p assets
-          node --input-type=module -e "import sharp from 'sharp'; await sharp('public/dragon-logo.svg').resize(1024, 1024, { fit: 'contain', background: '#f4f0e6' }).png().toFile('assets/icon-only.png')"
+          node --input-type=module -e "import sharp from 'sharp'; await sharp('public/dragon-logo.jpg').resize(1024, 1024, { fit: 'contain', background: '#f4f0e6' }).png().toFile('assets/icon-only.png')"
           npx capacitor-assets generate --android
 
       - name: Sync web assets
