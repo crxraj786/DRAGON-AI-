@@ -67,3 +67,80 @@ header{background:#0c1424e8}
 
 /* Dragon brand artwork */
 .logo img{display:block;width:100%;height:100%;object-fit:cover;border-radius:12px}
+
+
+/* DRAGON AI Light Premium design system */
+:root[data-theme="light"]{color-scheme:light;--page:#f5f7fb;--surface:#ffffff;--surface-soft:#f8faff;--line:#e4e9f2;--text:#172238;--muted:#71809a;--accent:#4d68e8;--accent-soft:#edf1ff}
+:root[data-theme="light"] body{color:var(--text);background:radial-gradient(ellipse at 78% -10%,#e4eaff 0,transparent 45%),#f5f7fb}
+:root[data-theme="light"] .sidebar{background:#fff;border-right-color:#e6eaf2;box-shadow:8px 0 35px #26385808}
+:root[data-theme="light"] .brand b{color:#172238}
+:root[data-theme="light"] .brand small,:root[data-theme="light"] .side-label{color:#8793a8}
+:root[data-theme="light"] .logo{background:#f0f3ff;border-color:#dce4ff}
+:root[data-theme="light"] .history-item{color:#65738c}
+:root[data-theme="light"] .history-item.selected,:root[data-theme="light"] .history-item:hover{background:#f0f3ff;border-color:#dfe6ff;color:#2e438e}
+:root[data-theme="light"] .side-bottom{border-top-color:#e8edf5}
+:root[data-theme="light"] .side-bottom button{color:#5c6b84}
+:root[data-theme="light"] .status{color:#6f7c91}
+:root[data-theme="light"] header{background:#ffffffdf;border-bottom-color:#e7ebf3}
+:root[data-theme="light"] .head-title strong{color:#1d2940}
+:root[data-theme="light"] .head-title small{color:#7c89a0}
+:root[data-theme="light"] .icon{background:#fff;border-color:#e1e7f1;color:#53627c;box-shadow:0 2px 8px #20305006}
+:root[data-theme="light"] .messages{background:transparent}
+:root[data-theme="light"] .glow{background:linear-gradient(145deg,#edf1ff,#f7edff);color:#5368e8;border-color:#dce3ff;box-shadow:0 12px 45px #6476d51b}
+:root[data-theme="light"] .welcome h1{color:#1b2942;letter-spacing:-1.1px}
+:root[data-theme="light"] .welcome>p{color:#78869d}
+:root[data-theme="light"] .suggestions button{background:#fff;border-color:#e1e7f2;color:#4d5e79;box-shadow:0 5px 18px #1d2d4d07;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+:root[data-theme="light"] .suggestions button:hover{border-color:#b9c6ff;background:#f9faff;box-shadow:0 8px 25px #5368d514;transform:translateY(-2px)}
+:root[data-theme="light"] .message.assistant .bubble{background:#fff;border-color:#e7ebf3;box-shadow:0 7px 26px #253b5b09}
+:root[data-theme="light"] .message.user .bubble{background:linear-gradient(145deg,#e9eeff,#f0edff);border-color:#dce2ff}
+:root[data-theme="light"] .message.user .role{color:#5363a4}
+:root[data-theme="light"] .message.assistant .role{color:#5a6fe0}
+:root[data-theme="light"] .markdown-body{color:#344159}
+:root[data-theme="light"] .markdown-body strong,:root[data-theme="light"] .markdown-body h1,:root[data-theme="light"] .markdown-body h2,:root[data-theme="light"] .markdown-body h3{color:#1e2b43}
+:root[data-theme="light"] .message.user .markdown-body{color:#273453}
+:root[data-theme="light"] .message.user .copy{color:#6676b0}
+:root[data-theme="light"] .avatar{background:#f1f4ff;border-color:#dfe6ff;color:#576fe0;box-shadow:0 3px 12px #23375c08}
+:root[data-theme="light"] .message.user .avatar{background:#e9edff;border-color:#d4ddff;color:#5264c8}
+:root[data-theme="light"] .md-inline-code{background:#f2f5fc;border-color:#e0e6f1;color:#425aa3}
+:root[data-theme="light"] .md-code{background:#f7f9fd;border-color:#e1e7f1;color:#273650}
+:root[data-theme="light"] .composer{background:#fff;border-color:#e0e6f1;box-shadow:0 12px 38px #25395b12}
+:root[data-theme="light"] .composer:focus-within{border-color:#9daeff;box-shadow:0 0 0 3px #667ff018,0 12px 38px #25395b12}
+:root[data-theme="light"] .composer textarea{color:#243149}
+:root[data-theme="light"] .composer textarea::placeholder{color:#99a4b7}
+:root[data-theme="light"] .composer>small{color:#8995a9}
+:root[data-theme="light"] .composer .attach{color:#7b8ca9}
+:root[data-theme="light"] .composer .attach:hover{background:#f1f4ff;color:#5269d9}
+:root[data-theme="light"] .error{background:#fff3f2;border-color:#f0c9c5;color:#a83d37}
+:root[data-theme="light"] .overlay{background:#1e2b4380;backdrop-filter:blur(5px)}
+:root[data-theme="light"] .settings{background:#fff;border-left-color:#e3e8f1;box-shadow:-20px 0 60px #1b2d4b14}
+:root[data-theme="light"] .settings-head h2{color:#1c2940}
+:root[data-theme="light"] .settings label{color:#5c6b83}
+:root[data-theme="light"] .settings select,:root[data-theme="light"] .auth-input{background:#f8faff;border-color:#e0e6f0;color:#243149}
+:root[data-theme="light"] .notice{background:#f4f7ff;border-color:#e0e7ff;color:#5c6d8c}
+:root[data-theme="light"] .action{background:#f8faff;border-color:#e1e7f2;color:#40516f}
+:root[data-theme="light"] .action.danger{background:#fff4f3;border-color:#f1d6d3;color:#a23d38}
+:root[data-theme="light"] .fine{color:#8793a7}
+:root[data-theme="light"] .chat-search{background:#f8faff;border-color:#e5eaf3;color:#7d8aa0}
+:root[data-theme="light"] .chat-search input{color:#26344c}
+:root[data-theme="light"] .chat-search input::placeholder{color:#9aa5b7}
+:root[data-theme="light"] .ai-status{background:#fff8eb;border-color:#f1dfbd;color:#875d20}
+:root[data-theme="light"] .ai-status.ready{background:#effbf5;border-color:#ccebd9;color:#226b4b}
+:root[data-theme="light"] .demo-tag{background:#fff4df;color:#9a651d}
+:root[data-theme="light"] .profile-button{display:flex;align-items:center;justify-content:center;gap:7px;min-height:38px;padding:0 12px;border:1px solid #e1e7f1;border-radius:11px;background:#fff;color:#53627c;font-size:12px;font-weight:600}
+:root[data-theme="light"] .profile-button:hover{background:#f5f7ff;border-color:#cbd5ff}
+.profile-button{display:flex;align-items:center;justify-content:center;gap:7px;min-height:38px;padding:0 12px;border:1px solid #27344c;border-radius:11px;background:#111a2c;color:#c8d4ea;font-size:12px;font-weight:600}
+.message-actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.voice-button{position:absolute;right:57px;top:11px;width:37px;height:37px;padding:0;display:grid;place-items:center;border:1px solid #dfe5f1;border-radius:12px;background:#f7f9ff;color:#6577d8}
+.voice-button:disabled{opacity:.45}
+:root[data-theme="dark"] .voice-button{background:#111a2c;border-color:#34425e;color:#a9bbff}
+.auth-card form{display:flex;flex-direction:column}
+.auth-card .auth-description{font-size:13px;line-height:1.7;color:#78869d}
+.auth-card .auth-input{width:100%;padding:12px;border:1px solid #e0e6f0;border-radius:10px;font:inherit;outline:none}
+.auth-card .auth-input:focus{border-color:#9daeff;box-shadow:0 0 0 3px #667ff018}
+.auth-card .auth-submit{justify-content:center;background:linear-gradient(120deg,#526de8,#8a63e8);color:#fff;border:0}
+.profile-summary{display:flex;flex-direction:column;align-items:center;gap:10px;padding:16px 0 22px;color:#26344c}
+.profile-summary span{font-size:13px;color:#78869d;overflow-wrap:anywhere}
+.profile-summary .profile-avatar{display:grid;place-items:center;width:64px;height:64px;border-radius:22px;background:#edf1ff;color:#586ee1}
+.profile-summary .action{align-self:stretch;margin-top:12px}
+@media(max-width:720px){.profile-button{width:38px;padding:0}.profile-button span{display:none}.voice-button{right:54px}.auth-card{width:100%}}
+@media(prefers-reduced-motion:no-preference){.glow{animation:dragonFloat 5s ease-in-out infinite}.welcome h1{animation:fadeUp .55s ease both}.suggestions button{animation:fadeUp .45s ease both}.suggestions button:nth-child(2){animation-delay:.07s}.suggestions button:nth-child(3){animation-delay:.14s}.message .bubble{animation:fadeUp .22s ease both}@keyframes dragonFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}@keyframes fadeUp{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}}
